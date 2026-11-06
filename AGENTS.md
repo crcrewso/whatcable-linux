@@ -34,7 +34,8 @@ The development Flatpak is authoritative for GTK, SDK, packaging, and runtime
 changes:
 
 ```sh
-./scripts/local-flatpak.sh
+flatpak-builder --user --install --force-clean \
+  build-flatpak-devel build-aux/com.nedrichards.WhatCable.Devel.json
 flatpak run com.nedrichards.WhatCable.Devel
 ```
 
@@ -68,10 +69,10 @@ working on local source.
 
 ## Local Flatpak build storage
 
-Use `./scripts/local-flatpak.sh` (defaults to development) for local checkout
-builds and updates. Use `./scripts/local-flatpak.sh production` only when the
-production manifest is intended. See `docs/local-flatpak.md`.
-Use the normal manifests and keep their test gates enabled.
+Build the local checkout with `flatpak-builder` and the development manifest
+as shown above. Use `build-aux/stable/com.nedrichards.WhatCable.json` only when
+the production manifest is intended. Use the normal manifests and keep their
+test gates enabled.
 
 - Keep the durable update repository at `flatpak-repo/`. Never place it under
   `.flatpak-builder/` or another disposable build/cache directory.
@@ -79,13 +80,14 @@ Use the normal manifests and keep their test gates enabled.
   the single staging location for both profiles. Build sequentially. Do not
   create per-task, per-validation or timestamped build/state/repository trees.
 - Use `--delete-build-dirs` and clean module working directories and staging
-  after success, failure and ordinary interruption, as the script does. Keep
-  the reusable cache and downloads. Do not use `--keep-build-dirs` for routine
+  after success, failure and ordinary interruption. Keep the reusable cache
+  and downloads. Do not use `--keep-build-dirs` for routine
   automated builds. Debug retention needs an explicit task-specific reason
   and cleanup when finished.
-- Do not run GNOME Builder or raw Builder commands concurrently with the
-  script. Interactive GNOME Builder development remains supported via the
-  `.Devel` manifest; prefer the script for automated validation and deployment.
+- Do not run GNOME Builder and command-line Builder builds concurrently.
+  Interactive GNOME Builder development remains supported via the `.Devel`
+  manifest; prefer the command-line build for automated validation and
+  deployment.
 - Keep directory-source `skip` lists excluding generated build directories,
   `target`, `.flatpak-builder*` and `flatpak-repo`, so artifacts are not copied
   into subsequent builds.

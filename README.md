@@ -64,27 +64,31 @@ Flatpak Builder renames its desktop file, AppStream metadata, and icon to the
 The development and production apps can therefore coexist without registration
 or icon collisions.
 
-Install the host `flatpak-builder` command with your distribution’s package
-manager, then install the GNOME runtime and SDK if needed:
+Install the GNOME runtime and SDK if needed, and the `flatpak-builder` command
+from your distribution's package manager (or the `org.flatpak.Builder` Flatpak):
 
 ```sh
 flatpak install --user flathub \
   org.gnome.Platform//51 org.gnome.Sdk//51
 ```
 
-Build, test, install, and run the development app with:
+Build, test, install, and run the development app from the repository root with:
 
 ```sh
-./scripts/local-flatpak.sh
+flatpak-builder --user --install --force-clean \
+  build-flatpak-devel build-aux/com.nedrichards.WhatCable.Devel.json
 flatpak run com.nedrichards.WhatCable.Devel
 ```
+
+If you installed `org.flatpak.Builder` instead of a host `flatpak-builder`,
+prefix the same arguments with `flatpak run org.flatpak.Builder` and add
+`--disable-rofiles-fuse`.
 
 `run-tests` is enabled in the development manifest, so the build fails if the
 Meson test suite fails in GNOME SDK 51. The Pytest wheels used for that build
 are pinned and test-only; they are removed from the completed app.
-The script uses the host `flatpak-builder` command. See
-[local builds and updates](docs/local-flatpak.md) for durable update storage,
-cleanup and the explicit production profile.
+`build-flatpak-devel` is ignored by Git and skipped by the manifest's directory
+source, so build output is not copied into later builds.
 
 For a shell in the installed development app:
 
