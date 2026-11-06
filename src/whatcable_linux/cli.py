@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import functools
 import json
 import sys
 
@@ -9,6 +10,7 @@ from . import __version__
 from .report import scan_system
 from .summary import summarize_port
 from .usb_sysfs import is_root_hub, summarize_usb_device, usb_device_bullets
+from .watch import run_watch
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -16,6 +18,18 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Inspect USB-C, USB device, and Power Delivery data exposed by Linux sysfs.")
     parser.add_argument("--json", action="store_true", help="print machine-readable JSON")
     parser.add_argument("--raw", action="store_true", help="include raw sysfs values")
+    parser.add_argument(
+        "--watch",
+        action="store_true",
+        help="keep polling and print connection changes (detaches, re-enumerations, speed drops) until Ctrl+C",
+    )
+    parser.add_argument(
+        "--interval",
+        type=float,
+        default=2.0,
+        metavar="SECONDS",
+        help="seconds between polls in --watch mode (default: 2)",
+    )
     parser.add_argument("--typec-root", default="/sys/class/typec", help=argparse.SUPPRESS)
     parser.add_argument("--pd-root", default="/sys/class/usb_power_delivery", help=argparse.SUPPRESS)
     parser.add_argument("--usb-root", default="/sys/bus/usb/devices", help=argparse.SUPPRESS)
@@ -32,6 +46,23 @@ def main(argv: list[str] | None = None) -> int:
         from .app import main as app_main
 
         return app_main([])
+
+    if args.interval <= 0:
+        parser.error("--interval must be greater than zero")
+
+    scan = functools.partial(
+        scan_system,
+        args.typec_root,
+        args.pd_root,
+        args.usb_root,
+        args.thunderbolt_root,
+        args.usb4_root,
+        args.debug_usb_devices,
+        args.chrome_ec_root,
+        args.chrome_ec_device,
+    )
+    if args.watch:
+        return run_watch(scan, interval=args.interval, as_json=args.json, out=sys.stdout)
 
     report = scan_system(
         args.typec_root,

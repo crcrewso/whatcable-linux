@@ -51,6 +51,16 @@ The latest recorded baseline is Fedora Silverblue 44 (`44.20260724.0`) with
 kernel `7.1.4-204.fc44.x86_64`, checked on 26 July 2026. Older kernels are
 supported on a best-effort basis where they expose compatible sysfs data.
 
+## Testing a cable
+
+WhatCable does not drive traffic or draw power; it reports what the kernel
+negotiated. `whatcable-linux --watch` polls for changes and tallies dropouts
+(partner detaches, USB devices re-enumerating with a new device number,
+Thunderbolt links renegotiating lower) until you stop it. See
+[Testing a cable](docs/cable-testing.md) for how to exercise a cable with a
+device on the far end, hunt an intermittent one, and read what a USB4 port
+does with a cable that is not USB4.
+
 [kernel-typec]: https://docs.kernel.org/driver-api/usb/typec.html
 [kernel-pd]: https://docs.kernel.org/admin-guide/abi-testing-files.html#abi-file-testing-sysfs-class-usb-power-delivery
 
@@ -115,6 +125,13 @@ To exercise the CLI with the same sandbox and permissions as the application:
 
 ```sh
 flatpak run com.nedrichards.WhatCable.Devel --json --raw
+```
+
+To watch a connection for dropouts until Ctrl+C (add `--json` for
+newline-delimited JSON, `--interval` to change the two-second poll):
+
+```sh
+flatpak run com.nedrichards.WhatCable.Devel --watch
 ```
 
 ## Flatpak
